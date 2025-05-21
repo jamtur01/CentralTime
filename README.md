@@ -1,66 +1,74 @@
 # CentralTime
 
-A macOS menu bar app that displays the current time in different cities, automatically handling daylight saving changes.
+A Swift menubar app that cycles through and displays time in multiple cities.
 
 ## Features
 
-- Displays current time for multiple cities in the menu bar
-- Automatically rotates through configured cities every 3 seconds
-- Handles daylight saving time changes automatically
-- Menu bar app with minimal footprint
+- Displays time for multiple cities in the menu bar
+- Automatically cycles through cities every 3 seconds
+- Minimalist design with city code and local time
 
-## Cities
+## Cities Displayed
 
-The app displays time for the following cities:
 - ORD (Chicago)
 - SFO (San Francisco)
 - BLR (Bangalore)
 - MEL (Melbourne)
 - LON (London)
 
-## Installation
+## Building with Swift Package Manager
 
-### Building the App Bundle
-
-To build a proper app bundle:
+To build the app using Swift Package Manager:
 
 ```bash
-./build_app.sh
+swift build
 ```
 
-Then run the app:
+For a release build:
+
+```bash
+swift build -c release
+```
+
+To build and create an app bundle:
+
+```bash
+./build-spm.sh
+```
+
+To build and install to your /Applications folder:
+
+```bash
+./build-spm.sh install
+```
+
+## Building with Original Method
+
+If you prefer, you can also build using the original script:
+
+```bash
+./build-app.sh
+```
+
+This will compile the app using swiftc directly.
+
+## Running the App
+
+After building, you can run the app by:
 
 ```bash
 open CentralTime.app
 ```
 
-### Permanent Installation
+## Adding to Login Items
 
-To install permanently:
-
-```bash
-cp -r CentralTime.app /Applications/
-```
-
-Then run it from the Applications folder.
-
-## Auto-Launch at Login
-
-To make the app start automatically when you log in:
+To have the app start when you log in:
 
 1. Open System Preferences/Settings
-2. Go to Users & Groups
-3. Select your user account and go to "Login Items"
-4. Click the "+" button and add CentralTime.app
+2. Go to Users & Groups/Login Items
+3. Add CentralTime.app to the list
 
-## Quitting the App
+## Requirements
 
-Click on the time display in the menu bar and select "Quit" from the menu.
-
-## License
-
-MIT - https://opensource.org/licenses/MIT
-
-## Author
-
-James Turnbull <james@ltl.so>
+- macOS 10.13 or later
+- Swift 5.5 or later
