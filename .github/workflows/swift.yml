@@ -17,4 +17,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      run: swiftc -o CentralTime.app/Contents/MacOS/CentralTime CentralTime/CentralTime.swift -framework Cocoa
+      run: swift build -v
