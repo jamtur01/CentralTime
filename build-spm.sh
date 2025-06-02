@@ -2,8 +2,11 @@
 
 # Build script for CentralTime with Swift Package Manager
 
-# Build with Swift Package Manager
-echo "Building CentralTime with Swift Package Manager..."
+# Extract version from Version.swift
+VERSION=$(grep -m 1 "public static let version = " Sources/Version.swift | cut -d '"' -f 2)
+BUILD=$(grep -m 1 "public static let build = " Sources/Version.swift | cut -d '"' -f 2)
+
+echo "Building CentralTime version $VERSION (build $BUILD) with Swift Package Manager..."
 swift build -c release
 
 # Create app bundle
@@ -35,9 +38,9 @@ cat > "$APP_CONTENTS/Info.plist" << EOL
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
+    <string>$VERSION</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>$BUILD</string>
     <key>LSMinimumSystemVersion</key>
     <string>10.13</string>
     <key>LSUIElement</key>

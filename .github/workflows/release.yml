@@ -1,48 +1,43 @@
-name: Release
+# This workflow will create a new release when a version tag is pushed
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
+
+name: Create Release
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*' # Run when tag matches v*, e.g., v1.0.0
 
 jobs:
-  build:
+  build-and-test:
     runs-on: macos-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Swift
-      uses: swift-actions/setup-swift@v1
-      
-    - name: Get the version
+    - uses: actions/checkout@v4
+    - name: Build
+      run: swift build -v
+
+  create-release:
+    needs: build-and-test
+    runs-on: macos-latest
+    permissions:
+      contents: write # Needed for creating releases
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Extract version from tag
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      
-    - name: Update version in files
-      run: |
-        # Update VERSION file
-        echo "${{ steps.get_version.outputs.VERSION }}" > VERSION
-        
-        # Update Info.plist
-        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.get_version.outputs.VERSION }}" CentralTime/Info.plist
-        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 1" CentralTime/Info.plist
-        
-        # Update build-spm.sh Info.plist template
-        sed -i '' "s/<string>1.1<\/string>/<string>${{ steps.get_version.outputs.VERSION }}<\/string>/" build-spm.sh
-      
-    - name: Build application
+    
+    - name: Create application bundle
       run: |
         chmod +x ./build-spm.sh
         ./build-spm.sh
-      
+    
     - name: Create ZIP archive
       run: |
         zip -r CentralTime-${{ steps.get_version.outputs.VERSION }}.zip CentralTime.app
-      
+    
     - name: Create Release
-      id: create_release
       uses: softprops/action-gh-release@v1
       with:
         name: Release ${{ steps.get_version.outputs.VERSION }}
@@ -51,3 +46,14 @@ jobs:
         files: |
           CentralTime-${{ steps.get_version.outputs.VERSION }}.zip
           VERSION
+        body: |
+          # CentralTime ${{ steps.get_version.outputs.VERSION }}
+          
+          A Swift menubar app that cycles through and displays time in multiple cities.
+          
+          ## Installation
+          
+          1. Download the CentralTime-${{ steps.get_version.outputs.VERSION }}.zip file
+          2. Unzip the file
+          3. Move CentralTime.app to your Applications folder
+          4. Open the application

@@ -34,8 +34,12 @@ echo "Updated CentralTime/Info.plist"
 sed -i '' "s/<string>[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?<\/string>/<string>$VERSION<\/string>/" build-spm.sh
 echo "Updated build-spm.sh"
 
+# Update Version.swift
+sed -i '' "s/public static let version = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?\"/public static let version = \"$VERSION\"/" Sources/Version.swift
+echo "Updated Sources/Version.swift"
+
 # Commit changes
-git add VERSION CentralTime/Info.plist build-spm.sh
+git add VERSION CentralTime/Info.plist build-spm.sh Sources/Version.swift
 git commit -m "Bump version to v$VERSION"
 echo "Committed version changes"
 

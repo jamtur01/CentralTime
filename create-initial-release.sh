@@ -8,7 +8,7 @@ set -e  # Exit on error
 echo "Creating initial v1.0.0 release..."
 
 # Commit any pending changes
-git add VERSION CentralTime/Info.plist build-spm.sh README.md .github/workflows/release.yml release.sh
+git add VERSION CentralTime/Info.plist build-spm.sh README.md .github/workflows/release.yml release.sh Sources/Version.swift
 git commit -m "Add versioning and release process"
 
 # Create and push tag
