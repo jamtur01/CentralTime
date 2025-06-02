@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Swift
+      uses: swift-actions/setup-swift@v1
+      
+    - name: Get the version
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+    - name: Update version in files
+      run: |
+        # Update VERSION file
+        echo "${{ steps.get_version.outputs.VERSION }}" > VERSION
+        
+        # Update Info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.get_version.outputs.VERSION }}" CentralTime/Info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 1" CentralTime/Info.plist
+        
+        # Update build-spm.sh Info.plist template
+        sed -i '' "s/<string>1.1<\/string>/<string>${{ steps.get_version.outputs.VERSION }}<\/string>/" build-spm.sh
+      
+    - name: Build application
+      run: |
+        chmod +x ./build-spm.sh
+        ./build-spm.sh
+      
+    - name: Create ZIP archive
+      run: |
+        zip -r CentralTime-${{ steps.get_version.outputs.VERSION }}.zip CentralTime.app
+      
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Release ${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+        files: |
+          CentralTime-${{ steps.get_version.outputs.VERSION }}.zip
+          VERSION

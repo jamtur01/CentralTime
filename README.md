@@ -72,3 +72,36 @@ To have the app start when you log in:
 
 - macOS 10.13 or later
 - Swift 5.5 or later
+
+## Versioning and Releases
+
+CentralTime follows semantic versioning (SemVer) with version numbers in the format `MAJOR.MINOR.PATCH`.
+
+### Current Version
+
+The current version is tracked in the `VERSION` file at the root of the repository.
+
+### Creating a New Release
+
+To create a new release:
+
+1. Run the release script with the new version number:
+
+```bash
+./release.sh 1.0.0
+```
+
+This script will:
+- Update the version in all necessary files
+- Commit the changes
+- Create and push a git tag (e.g., v1.0.0)
+- Trigger the GitHub Actions release workflow
+
+2. The GitHub Actions workflow will automatically:
+- Build the application
+- Create a GitHub release
+- Attach the built application as a downloadable asset
+
+### Downloading Releases
+
+Pre-built releases can be downloaded from the [GitHub Releases page](https://github.com/YOUR_USERNAME/CentralTime/releases).
