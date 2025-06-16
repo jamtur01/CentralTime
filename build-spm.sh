@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Build script for CentralTime with Swift Package Manager
+# Build script for CentralTime v2.0.0 with Swift Package Manager
+# New design with timezone-sorted cities and modern SwiftUI interface
 
 # Extract version from Version.swift
 VERSION=$(grep -m 1 "public static let version = " Sources/Version.swift | cut -d '"' -f 2)
@@ -21,6 +22,16 @@ mkdir -p "$APP_RESOURCES"
 
 # Copy binary
 cp ./.build/release/CentralTime "$APP_MACOS/"
+
+# Code sign the binary and app bundle
+echo "Code signing..."
+codesign --force --deep --sign - "$APP_MACOS/CentralTime"
+codesign --force --deep --sign - "$APP_NAME"
+
+# Remove quarantine attributes that might cause "damaged" warnings
+echo "Removing quarantine attributes..."
+xattr -c "$APP_NAME" 2>/dev/null || true
+find "$APP_NAME" -type f -exec xattr -c {} \; 2>/dev/null || true
 
 # Create Info.plist
 echo "Creating Info.plist..."

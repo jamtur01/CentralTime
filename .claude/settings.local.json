@@ -14,7 +14,13 @@
       "Bash(CentralTime.app/Contents/MacOS/CentralTime)",
       "Bash(pkill:*)",
       "WebFetch(domain:stackoverflow.com)",
-      "Bash(open CentralTime.app)"
+      "Bash(open CentralTime.app)",
+      "Bash(chmod:*)",
+      "Bash(./release.sh:*)",
+      "Bash(sed:*)",
+      "Bash(./release-simple.sh:*)",
+      "Bash(xattr:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

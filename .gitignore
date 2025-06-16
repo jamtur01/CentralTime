@@ -49,3 +49,5 @@ Icon
 *.swp
 *.swo
 *~
+
+.claude
