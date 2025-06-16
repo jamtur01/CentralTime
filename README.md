@@ -42,16 +42,6 @@ To build and install to your /Applications folder:
 ./build-spm.sh install
 ```
 
-## Building with Original Method
-
-If you prefer, you can also build using the original script:
-
-```bash
-./build-app.sh
-```
-
-This will compile the app using swiftc directly.
-
 ## Running the App
 
 After building, you can run the app by:
