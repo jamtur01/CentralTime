@@ -142,7 +142,6 @@ struct TimeZoneData {
         City(code: "TNR", timeZoneIdentifier: "Indian/Antananarivo", displayName: "Antananarivo", emoji: "🇲🇬"),
         City(code: "SEZ", timeZoneIdentifier: "Indian/Mahe", displayName: "Victoria", emoji: "🇸🇨"),
         City(code: "MLE", timeZoneIdentifier: "Indian/Maldives", displayName: "Malé", emoji: "🇲🇻"),
-        City(code: "CMB", timeZoneIdentifier: "Asia/Colombo", displayName: "Colombo", emoji: "🇱🇰"),
         City(code: "ULN", timeZoneIdentifier: "Asia/Ulaanbaatar", displayName: "Ulaanbaatar", emoji: "🇲🇳"),
         City(code: "PNH", timeZoneIdentifier: "Asia/Phnom_Penh", displayName: "Phnom Penh", emoji: "🇰🇭"),
         City(code: "VTE", timeZoneIdentifier: "Asia/Vientiane", displayName: "Vientiane", emoji: "🇱🇦"),
@@ -157,15 +156,14 @@ struct TimeZoneData {
         City(code: "YAP", timeZoneIdentifier: "Pacific/Chuuk", displayName: "Chuuk", emoji: "🇫🇲"),
         City(code: "KOR", timeZoneIdentifier: "Pacific/Palau", displayName: "Koror", emoji: "🇵🇼"),
         City(code: "YRN", timeZoneIdentifier: "Pacific/Nauru", displayName: "Yaren", emoji: "🇳🇷"),
-        City(code: "TRV", timeZoneIdentifier: "Pacific/Tarawa", displayName: "Tarawa", emoji: "🇰🇮"),
-        City(code: "HON", timeZoneIdentifier: "Pacific/Honolulu", displayName: "Honolulu", emoji: "🇺🇸")
+        City(code: "TRV", timeZoneIdentifier: "Pacific/Tarawa", displayName: "Tarawa", emoji: "🇰🇮")
     ]
     
     static let defaultTimezones = [
         City(code: "NYC", timeZoneIdentifier: "America/New_York", displayName: "New York", emoji: "🗽"),
-        City(code: "CHI", timeZoneIdentifier: "America/Chicago", displayName: "Chicago", emoji: "🏙️"),
+        City(code: "LHR", timeZoneIdentifier: "Europe/London", displayName: "London", emoji: "🇬🇧"),
+        City(code: "MEL", timeZoneIdentifier: "Australia/Melbourne", displayName: "Melbourne", emoji: "🇦🇺"),
         City(code: "LAX", timeZoneIdentifier: "America/Los_Angeles", displayName: "Los Angeles", emoji: "🌴"),
-        City(code: "LON", timeZoneIdentifier: "Europe/London", displayName: "London", emoji: "🇬🇧"),
-        City(code: "TOK", timeZoneIdentifier: "Asia/Tokyo", displayName: "Tokyo", emoji: "🇯🇵")
+        City(code: "CHI", timeZoneIdentifier: "America/Chicago", displayName: "Chicago", emoji: "🏙️")
     ]
 }

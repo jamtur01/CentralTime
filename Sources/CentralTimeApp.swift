@@ -31,7 +31,7 @@ class StatusBarController {
     private var statusItem: NSStatusItem
     private var popover: NSPopover
     private var appState = AppState()
-    private var settingsWindow: NSWindow?
+    var settingsWindow: NSWindow?
     
     init() {
         statusBar = NSStatusBar.system
@@ -49,8 +49,9 @@ class StatusBarController {
     
     private func setupPopover() {
         popover.contentSize = NSSize(width: 320, height: 400)
-        popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: PopoverView(appState: appState))
+        popover.behavior = .applicationDefined
+        popover.animates = true
+        popover.contentViewController = NSHostingController(rootView: PopoverView(appState: appState, statusBarController: self))
     }
     
     private func setupStatusItem() {
@@ -76,7 +77,7 @@ class StatusBarController {
         }
     }
     
-    @objc private func togglePopover(_ sender: AnyObject?) {
+@objc private func togglePopover(_ sender: AnyObject?) {
         if popover.isShown {
             hidePopover(sender: sender)
         } else {
@@ -90,11 +91,18 @@ class StatusBarController {
         }
     }
     
-    private func hidePopover(sender: AnyObject?) {
+    func hidePopover(sender: AnyObject?) {
         popover.performClose(sender)
     }
     
     func openSettingsWindow() {
+        // If settings window is already open, just bring it to front
+        if let existingWindow = settingsWindow, existingWindow.isVisible {
+            existingWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
         // Close existing window if open
         settingsWindow?.close()
         
@@ -109,11 +117,14 @@ class StatusBarController {
         window.setContentSize(NSSize(width: 500, height: 600))
         
         // Create a custom delegate to prevent app termination
-        let delegate = SettingsWindowDelegate()
+        let delegate = SettingsWindowDelegate(statusBarController: self)
         window.delegate = delegate
         
         let citySelectionView = CitySelectionView(onClose: {
-            window.close()
+            DispatchQueue.main.async {
+                self.settingsWindow = nil
+                window.orderOut(nil)
+            }
         }).environmentObject(appState)
         
         window.contentViewController = NSHostingController(rootView: citySelectionView)
@@ -126,17 +137,26 @@ class StatusBarController {
 }
 
 class SettingsWindowDelegate: NSObject, NSWindowDelegate {
+    weak var statusBarController: StatusBarController?
+    
+    init(statusBarController: StatusBarController? = nil) {
+        self.statusBarController = statusBarController
+        super.init()
+    }
+    
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         return true // Allow window to close
     }
     
     func windowWillClose(_ notification: Notification) {
-        // Don't terminate the app when settings window closes
+        // Clear the reference when window closes
+        statusBarController?.settingsWindow = nil
     }
 }
 
 struct PopoverView: View {
     @ObservedObject var appState: AppState
+    weak var statusBarController: StatusBarController?
     
     var body: some View {
         VStack(spacing: 12) {
@@ -145,10 +165,11 @@ struct PopoverView: View {
                 Text("🌍 World Clock")
                     .font(.headline)
                 Spacer()
-                Button("✕") {
+                Button("Quit") {
                     NSApplication.shared.terminate(nil)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             }
             
             // Cities
@@ -188,7 +209,7 @@ struct PopoverView: View {
             
             // Settings
             Button("⚙️ Settings") {
-                AppDelegate.instance.statusBarController.openSettingsWindow()
+                statusBarController?.openSettingsWindow()
             }
             .buttonStyle(.bordered)
             .controlSize(.small)

@@ -3,7 +3,7 @@ import SwiftUI
 struct CitySelectionView: View {
     @EnvironmentObject var appState: AppState
     @State private var searchText = ""
-    @State private var selectedCityIdentifiers: Set<String> = []
+    @State private var selectedCityCodes: Set<String> = []
     let onClose: () -> Void
     
     init(onClose: @escaping () -> Void = {}) {
@@ -63,12 +63,12 @@ struct CitySelectionView: View {
                     ForEach(filteredCities, id: \.timeZoneIdentifier) { city in
                         CitySelectionRow(
                             city: city,
-                            isSelected: selectedCityIdentifiers.contains(city.timeZoneIdentifier)
+                            isSelected: selectedCityCodes.contains(city.code)
                         ) { isSelected in
                             if isSelected {
-                                selectedCityIdentifiers.insert(city.timeZoneIdentifier)
+                                selectedCityCodes.insert(city.code)
                             } else {
-                                selectedCityIdentifiers.remove(city.timeZoneIdentifier)
+                                selectedCityCodes.remove(city.code)
                             }
                         }
                         .padding(.horizontal, 4)
@@ -92,7 +92,7 @@ struct CitySelectionView: View {
                 
                 Spacer()
                 
-                Text("\(selectedCityIdentifiers.count) cities selected")
+                Text("\(selectedCityCodes.count) cities selected")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
@@ -100,19 +100,19 @@ struct CitySelectionView: View {
                 
                 Button("Save") {
                     let selectedCities = appState.allAvailableTimezones.filter { 
-                        selectedCityIdentifiers.contains($0.timeZoneIdentifier) 
+                        selectedCityCodes.contains($0.code) 
                     }
                     appState.updateSelectedCities(selectedCities)
                     onClose()
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(selectedCityIdentifiers.isEmpty)
+                .disabled(selectedCityCodes.isEmpty)
                 .keyboardShortcut(.return, modifiers: [])
             }
         }
         .padding(20)
         .onAppear {
-            selectedCityIdentifiers = Set(appState.selectedCities.map { $0.timeZoneIdentifier })
+            selectedCityCodes = Set(appState.selectedCities.map { $0.code })
         }
     }
     
