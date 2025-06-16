@@ -2,7 +2,7 @@ import SwiftUI
 import Foundation
 
 class AppState: ObservableObject {
-    @Published var selectedCities = TimeZoneData.defaultTimezones
+    @Published var selectedCities = TimeZoneManager.getDefaultCities()
     @Published var currentCityIndex = 0
     @Published var timeSliderOffset: TimeInterval = 0
     @Published var currentTimeString = ""
@@ -10,7 +10,7 @@ class AppState: ObservableObject {
     
     private var timer: Timer?
     
-    let allAvailableTimezones = TimeZoneData.allTimezones
+    let allAvailableTimezones = TimeZoneManager.getAllAvailableCities()
     
     var currentDisplayCity: City? {
         guard !selectedCities.isEmpty else { return nil }
@@ -94,7 +94,12 @@ class AppState: ObservableObject {
     }
     
     func updateSelectedCities(_ cities: [City]) {
-        selectedCities = cities
+        // Sort cities by timezone offset
+        selectedCities = cities.sorted { city1, city2 in
+            let offset1 = city1.timeZone.secondsFromGMT()
+            let offset2 = city2.timeZone.secondsFromGMT()
+            return offset1 < offset2
+        }
         currentCityIndex = 0
         updateCurrentTime()
     }
