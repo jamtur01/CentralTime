@@ -1,10 +1,10 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.7
 import PackageDescription
 
 let package = Package(
     name: "CentralTime",
     platforms: [
-        .macOS(.v10_13)
+        .macOS(.v13)
     ],
     products: [
         .executable(name: "CentralTime", targets: ["CentralTime"])

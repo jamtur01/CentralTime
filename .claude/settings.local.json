@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(swift build)",
+      "Bash(swift build:*)",
+      "Bash(./build-smp.sh:*)",
+      "Bash(./build-spm.sh:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:nilcoalescing.com)",
+      "WebFetch(domain:troz.net)",
+      "WebFetch(domain:sarunw.com)",
+      "WebFetch(domain:levelup.gitconnected.com)",
+      "Bash(ls:*)",
+      "Bash(CentralTime.app/Contents/MacOS/CentralTime)",
+      "Bash(pkill:*)",
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(open CentralTime.app)"
+    ],
+    "deny": []
+  }
+}

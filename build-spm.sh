@@ -42,7 +42,7 @@ cat > "$APP_CONTENTS/Info.plist" << EOL
     <key>CFBundleVersion</key>
     <string>$BUILD</string>
     <key>LSMinimumSystemVersion</key>
-    <string>10.13</string>
+    <string>13.0</string>
     <key>LSUIElement</key>
     <true/>
     <key>NSHumanReadableCopyright</key>
