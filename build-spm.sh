@@ -25,8 +25,15 @@ cp ./.build/release/CentralTime "$APP_MACOS/"
 
 # Code sign the binary and app bundle
 echo "Code signing..."
-codesign --force --deep --sign - "$APP_MACOS/CentralTime"
-codesign --force --deep --sign - "$APP_NAME"
+if [ -n "$MACOS_CODESIGN_IDENTITY" ]; then
+    echo "Using Developer ID: $MACOS_CODESIGN_IDENTITY"
+    codesign --force --deep --sign "$MACOS_CODESIGN_IDENTITY" "$APP_MACOS/CentralTime"
+    # Final signing with entitlements will be done separately in CI
+else
+    echo "Using ad-hoc signing for local development"
+    codesign --force --deep --sign - "$APP_MACOS/CentralTime"
+    codesign --force --deep --sign - "$APP_NAME"
+fi
 
 # Remove quarantine attributes that might cause "damaged" warnings
 echo "Removing quarantine attributes..."

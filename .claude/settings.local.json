@@ -20,7 +20,8 @@
       "Bash(sed:*)",
       "Bash(./release-simple.sh:*)",
       "Bash(xattr:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(./build-dev.sh:*)"
     ],
     "deny": []
   }

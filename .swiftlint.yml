@@ -1,0 +1,52 @@
+# SwiftLint configuration for CentralTime
+
+# Paths to include/exclude
+included:
+  - Sources
+
+excluded:
+  - .build
+  - CentralTime.xcodeproj
+  - CentralTime/
+
+# Rules configuration
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - explicit_init
+  - force_unwrapping
+  - overridden_super_call
+  - redundant_nil_coalescing
+  - switch_case_on_newline
+  - trailing_closure
+  - unneeded_parentheses_in_closure_argument
+
+disabled_rules:
+  - line_length # Allow longer lines for SwiftUI
+  - trailing_whitespace # Auto-fixed by most editors
+  - force_cast # Sometimes needed for AppKit integration
+
+# Rule customization
+line_length:
+  warning: 120
+  error: 150
+
+identifier_name:
+  min_length: 2
+  max_length: 60
+
+type_name:
+  min_length: 3
+  max_length: 40
+
+file_length:
+  warning: 400
+  error: 500
+
+function_body_length:
+  warning: 60
+  error: 100
+
+type_body_length:
+  warning: 300
+  error: 400

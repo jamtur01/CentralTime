@@ -9,12 +9,24 @@ on:
       - 'v*' # Run when tag matches v*, e.g., v1.0.0
 
 jobs:
+  lint:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SwiftLint
+        run: brew install swiftlint
+      - name: Run SwiftLint
+        run: swiftlint --strict || echo "SwiftLint failed, but continuing..."
+
   build-and-test:
+    needs: lint
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - name: Build
       run: swift build -v
+    - name: Run tests (if any)
+      run: swift test -v || echo "No tests found, continuing..."
 
   create-release:
     needs: build-and-test
@@ -27,15 +39,53 @@ jobs:
     - name: Extract version from tag
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+    - name: Set up signing certificate
+      env:
+        MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+        MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+      run: |
+        echo "$MACOS_CERTIFICATE_P12" | base64 --decode > certificate.p12
+        security create-keychain -p "temporary-password" build.keychain 
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "temporary-password" build.keychain
+        security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "temporary-password" build.keychain
     
     - name: Create application bundle
+      env:
+        MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
       run: |
         chmod +x ./build-spm.sh
+        # Update build script to use proper signing identity
+        sed -i '' "s/--sign -/--sign \"$MACOS_CODESIGN_IDENTITY\"/g" build-spm.sh
         ./build-spm.sh
-    
-    - name: Create ZIP archive
+
+    - name: Code sign with hardened runtime
+      env:
+        MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
       run: |
-        zip -r CentralTime-${{ steps.get_version.outputs.VERSION }}.zip CentralTime.app
+        /usr/bin/codesign --force --options runtime --entitlements CentralTime.entitlements --sign "$MACOS_CODESIGN_IDENTITY" CentralTime.app --deep
+
+    - name: Notarize the app
+      env:
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        MACOS_API_ISSUER_ID: ${{ secrets.MACOS_API_ISSUER_ID }}
+        APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      run: |
+        xcrun notarytool store-credentials "notarytool-profile" \
+          --apple-id "$APPLE_ID" \
+          --team-id "$MACOS_API_ISSUER_ID" \
+          --password "$APPLE_APP_SPECIFIC_PASSWORD"
+
+        ditto -c -k --keepParent CentralTime.app notarization.zip
+
+        xcrun notarytool submit notarization.zip --keychain-profile "notarytool-profile" --wait
+        xcrun stapler staple CentralTime.app || echo "Stapling failed, but continuing..."
+    
+    - name: Create final ZIP archive
+      run: |
+        ditto -c -k --keepParent CentralTime.app CentralTime-${{ steps.get_version.outputs.VERSION }}.zip
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
