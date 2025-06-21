@@ -69,7 +69,7 @@ class StatusBarController {
     private func updateStatusItemTitle() {
         DispatchQueue.main.async {
             if let currentCity = self.appState.currentDisplayCity {
-                let timeString = self.appState.currentTimeString
+                let timeString = self.appState.getTimeString(for: currentCity, useSliderTime: true, shortFormat: true)
                 self.statusItem.button?.title = "\(currentCity.emoji) \(currentCity.code) \(timeString)"
             } else {
                 self.statusItem.button?.title = "🕐 CT"

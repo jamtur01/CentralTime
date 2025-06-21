@@ -21,7 +21,8 @@
       "Bash(./release-simple.sh:*)",
       "Bash(xattr:*)",
       "Bash(find:*)",
-      "Bash(./build-dev.sh:*)"
+      "Bash(./build-dev.sh:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
