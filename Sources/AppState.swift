@@ -1,14 +1,15 @@
 import SwiftUI
 import Foundation
 
-class AppState: ObservableObject {
+final class AppState: ObservableObject {
     @Published var selectedCities = TimeZoneManager.getDefaultCities()
     @Published var currentCityIndex = 0
     @Published var timeSliderOffset: TimeInterval = 0
-    @Published var currentTimeString = ""
     @Published var isSettingsWindowOpen = false
     
     private var timer: Timer?
+    private let dateFormatter = DateFormatter()
+    private let shortDateFormatter = DateFormatter()
     
     let allAvailableTimezones = TimeZoneManager.getAllAvailableCities()
     
@@ -18,28 +19,34 @@ class AppState: ObservableObject {
     }
     
     init() {
-        updateCurrentTime()
+        configureDateFormatters()
         startTimer()
+    }
+    
+    private func configureDateFormatters() {
+        dateFormatter.locale = Locale(identifier: Constants.defaultLocaleIdentifier)
+        dateFormatter.dateFormat = Constants.longTimeFormat
+        
+        shortDateFormatter.locale = Locale(identifier: Constants.defaultLocaleIdentifier)
+        shortDateFormatter.dateFormat = Constants.shortTimeFormat
     }
     
     deinit {
         timer?.invalidate()
     }
     
-    func startTimer() {
+    private func startTimer() {
         timer?.invalidate()
         
-        timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
-            self?.updateCurrentTime()
+        timer = Timer.scheduledTimer(withTimeInterval: Constants.cityRotationInterval, repeats: true) { [weak self] _ in
             self?.rotateToNextCity()
         }
         
-        // Ensure timer works in all run loop modes
+        timer?.tolerance = Constants.timerTolerance
+        
         if let timer = timer {
             RunLoop.current.add(timer, forMode: .common)
         }
-        
-        updateCurrentTime()
     }
     
     private func rotateToNextCity() {
@@ -47,61 +54,34 @@ class AppState: ObservableObject {
         currentCityIndex = (currentCityIndex + 1) % selectedCities.count
     }
     
-    private func updateCurrentTime() {
-        guard let currentCity = currentDisplayCity else {
-            currentTimeString = ""
-            return
-        }
-        
-        let baseDate = Date().addingTimeInterval(timeSliderOffset)
-        let formatter = DateFormatter()
-        formatter.timeZone = currentCity.timeZone
-        formatter.dateFormat = "h:mm a"
-        formatter.locale = Locale(identifier: "en_US")
-        
-        currentTimeString = formatter.string(from: baseDate)
-    }
-    
+    @MainActor
     func getTimeString(for city: City, useSliderTime: Bool = false, shortFormat: Bool = false) -> String {
         let baseDate = useSliderTime ? Date().addingTimeInterval(timeSliderOffset) : Date()
-        let formatter = DateFormatter()
-        formatter.timeZone = city.timeZone
-        formatter.locale = Locale(identifier: "en_US")
+        let formatter = shortFormat ? shortDateFormatter : dateFormatter
         
-        if shortFormat {
-            formatter.dateFormat = "h:mm a"
-        } else {
-            formatter.dateFormat = "EEE h:mm a"
+        if formatter.timeZone != city.timeZone {
+            formatter.timeZone = city.timeZone
         }
         
         return formatter.string(from: baseDate)
     }
     
-    // Time slider controls
+    
     func previousHour() {
-        timeSliderOffset -= 3600 // 1 hour in seconds
-        updateCurrentTime()
+        timeSliderOffset -= Constants.secondsPerHour
     }
     
     func nextHour() {
-        timeSliderOffset += 3600 // 1 hour in seconds
-        updateCurrentTime()
+        timeSliderOffset += Constants.secondsPerHour
     }
     
     func resetTime() {
         timeSliderOffset = 0
-        updateCurrentTime()
     }
     
     func updateSelectedCities(_ cities: [City]) {
-        // Sort cities by timezone offset
-        selectedCities = cities.sorted { city1, city2 in
-            let offset1 = city1.timeZone.secondsFromGMT()
-            let offset2 = city2.timeZone.secondsFromGMT()
-            return offset1 < offset2
-        }
+        selectedCities = TimeZoneManager.sortCitiesByTimezone(cities)
         currentCityIndex = 0
-        updateCurrentTime()
     }
     
 }

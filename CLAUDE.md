@@ -91,31 +91,36 @@ CentralTime uses a hybrid SwiftUI + AppKit architecture for optimal menu bar int
 
 ## Build Commands
 
-### Development Build
+The project uses a unified build script (`build.sh`) that handles all build scenarios:
+
+### Development Build (Default)
 ```bash
-swift build
+./build.sh
+# or explicitly:
+./build.sh --type development
 ```
 
 ### Release Build
 ```bash
-swift build -c release
-```
-
-### Create App Bundle
-```bash
-./build-spm.sh
+./build.sh --type release
 ```
 
 ### Build and Install to Applications
 ```bash
-./build-spm.sh install
+./build.sh --type release --install
 ```
 
-### Development Build with Signing
-For local development with proper signing to avoid "damaged" warnings:
+### Build with Code Signing
 ```bash
-./build-dev.sh
+./build.sh --type release --sign "Developer ID Application: Your Name"
 ```
+
+### CI Build with Notarization
+```bash
+./build.sh --type ci --sign "$MACOS_CODESIGN_IDENTITY" --notarize --zip
+```
+
+For detailed build options, run `./build.sh --help` or see [BUILD.md](BUILD.md).
 
 ## Code Quality
 
@@ -184,15 +189,18 @@ swift test -v
 - JIT and unsigned memory execution disabled
 
 ### Build Script Features
-- `build-spm.sh`: Creates app bundle with proper Info.plist, handles both Developer ID and ad-hoc signing
-- `build-dev.sh`: Wrapper for local development with hardened runtime signing
-- Automatic quarantine attribute removal for local builds
+- `build.sh`: Unified script for all build types with proper Info.plist creation
+- Supports development, release, and CI builds
+- Code signing with Developer ID or ad-hoc signing
+- Notarization support for distribution
+- Automatic quarantine attribute removal for development builds
 - Version extraction from `Sources/Version.swift`
+- ZIP archive creation for releases
 
 ## Key Files
 
-- `build-spm.sh`: Custom build script that creates macOS app bundle with proper Info.plist and code signing
-- `build-dev.sh`: Development build script with hardened runtime signing for local testing  
+- `build.sh`: Unified build script for all build types (development, release, CI)
+- `validate-release.sh`: Script to verify release readiness
 - `Package.swift`: Swift Package Manager configuration (requires macOS 13.0+ for SwiftUI MenuBarExtra)
 - `CentralTime.entitlements`: Security entitlements for hardened runtime and code signing
 - `VERSION`: Simple version file used by build scripts and GitHub Actions

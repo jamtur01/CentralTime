@@ -4,6 +4,7 @@ struct CitySelectionView: View {
     @EnvironmentObject var appState: AppState
     @State private var searchText = ""
     @State private var selectedCityCodes: Set<String> = []
+    @State private var cachedDateFormatter: DateFormatter?
     let onClose: () -> Void
     
     init(onClose: @escaping () -> Void = {}) {
@@ -11,14 +12,13 @@ struct CitySelectionView: View {
     }
     
     var filteredCities: [City] {
-        let cities = appState.allAvailableTimezones.sorted { $0.displayName < $1.displayName }
-        
         if searchText.isEmpty {
-            return cities
+            return appState.allAvailableTimezones
         } else {
-            return cities.filter { city in
-                city.displayName.localizedCaseInsensitiveContains(searchText) ||
-                city.code.localizedCaseInsensitiveContains(searchText)
+            let searchLower = searchText.lowercased()
+            return appState.allAvailableTimezones.filter { city in
+                city.displayName.lowercased().contains(searchLower) ||
+                city.code.lowercased().contains(searchLower)
             }
         }
     }
@@ -60,10 +60,11 @@ struct CitySelectionView: View {
             // City list
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(filteredCities, id: \.timeZoneIdentifier) { city in
+                    ForEach(Array(filteredCities.prefix(Constants.maxCitiesToDisplay)), id: \.timeZoneIdentifier) { city in
                         CitySelectionRow(
                             city: city,
-                            isSelected: selectedCityCodes.contains(city.code)
+                            isSelected: selectedCityCodes.contains(city.code),
+                            dateFormatter: getDateFormatter()
                         ) { isSelected in
                             if isSelected {
                                 selectedCityCodes.insert(city.code)
@@ -73,7 +74,7 @@ struct CitySelectionView: View {
                         }
                         .padding(.horizontal, 4)
                         
-                        if city.timeZoneIdentifier != filteredCities.last?.timeZoneIdentifier {
+                        if city.timeZoneIdentifier != filteredCities.prefix(Constants.maxCitiesToDisplay).last?.timeZoneIdentifier {
                             Divider()
                                 .padding(.leading, 40)
                         }
@@ -92,9 +93,16 @@ struct CitySelectionView: View {
                 
                 Spacer()
                 
-                Text("\(selectedCityCodes.count) cities selected")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                VStack(spacing: 2) {
+                    Text("\(selectedCityCodes.count) cities selected")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    if filteredCities.count > Constants.maxCitiesToDisplay {
+                        Text("Showing \(Constants.maxCitiesToDisplay) of \(filteredCities.count) cities")
+                            .font(.caption2)
+                            .foregroundColor(.orange)
+                    }
+                }
                 
                 Spacer()
                 
@@ -116,21 +124,23 @@ struct CitySelectionView: View {
         }
     }
     
-    private func closeWindow() {
-        // Close the current window properly without terminating the app
-        DispatchQueue.main.async {
-            if let window = NSApplication.shared.keyWindow {
-                window.performClose(nil)
-            } else if let window = NSApplication.shared.windows.first(where: { $0.title == "City Selection" }) {
-                window.performClose(nil)
-            }
+    private func getDateFormatter() -> DateFormatter {
+        if let formatter = cachedDateFormatter {
+            return formatter
         }
+        let formatter = DateFormatter()
+        formatter.dateFormat = Constants.shortTimeFormat
+        formatter.locale = Locale(identifier: Constants.defaultLocaleIdentifier)
+        cachedDateFormatter = formatter
+        return formatter
     }
+    
 }
 
 struct CitySelectionRow: View {
     let city: City
     let isSelected: Bool
+    let dateFormatter: DateFormatter
     let onToggle: (Bool) -> Void
     
     var body: some View {
@@ -155,7 +165,7 @@ struct CitySelectionRow: View {
                     
                     Spacer()
                     
-                    Text(getCurrentTimeString(for: city))
+                    Text(getCurrentTimeString())
                         .font(.system(.caption, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
@@ -179,12 +189,11 @@ struct CitySelectionRow: View {
         )
     }
     
-    private func getCurrentTimeString(for city: City) -> String {
-        let formatter = DateFormatter()
-        formatter.timeZone = city.timeZone
-        formatter.dateFormat = "h:mm a"
-        formatter.locale = Locale(identifier: "en_US")
-        return formatter.string(from: Date())
+    private func getCurrentTimeString() -> String {
+        if dateFormatter.timeZone != city.timeZone {
+            dateFormatter.timeZone = city.timeZone
+        }
+        return dateFormatter.string(from: Date())
     }
 }
 

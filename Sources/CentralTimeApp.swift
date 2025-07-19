@@ -26,12 +26,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-class StatusBarController {
+import Combine
+
+final class StatusBarController {
     private var statusBar: NSStatusBar
     private var statusItem: NSStatusItem
     private var popover: NSPopover
-    private var appState = AppState()
-    var settingsWindow: NSWindow?
+    private let appState = AppState()
+    private var cancellables = Set<AnyCancellable>()
+    private var updateTimer: Timer?
+    weak var settingsWindow: NSWindow?
     
     init() {
         statusBar = NSStatusBar.system
@@ -40,15 +44,22 @@ class StatusBarController {
         
         setupPopover()
         setupStatusItem()
-        startTimer()
     }
     
     func setup() {
-        updateStatusItemTitle()
+        Task { @MainActor in
+            updateStatusItemTitle()
+        }
+        startUpdateTimer()
+    }
+    
+    deinit {
+        updateTimer?.invalidate()
+        cancellables.removeAll()
     }
     
     private func setupPopover() {
-        popover.contentSize = NSSize(width: 320, height: 400)
+        popover.contentSize = NSSize(width: Constants.popoverWidth, height: Constants.popoverHeight)
         popover.behavior = .applicationDefined
         popover.animates = true
         popover.contentViewController = NSHostingController(rootView: PopoverView(appState: appState, statusBarController: self))
@@ -57,23 +68,34 @@ class StatusBarController {
     private func setupStatusItem() {
         statusItem.button?.action = #selector(togglePopover(_:))
         statusItem.button?.target = self
-        updateStatusItemTitle()
-    }
-    
-    private func startTimer() {
-        Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
-            self.updateStatusItemTitle()
+        Task { @MainActor in
+            updateStatusItemTitle()
         }
     }
     
-    private func updateStatusItemTitle() {
-        DispatchQueue.main.async {
-            if let currentCity = self.appState.currentDisplayCity {
-                let timeString = self.appState.getTimeString(for: currentCity, useSliderTime: true, shortFormat: true)
-                self.statusItem.button?.title = "\(currentCity.emoji) \(currentCity.code) \(timeString)"
-            } else {
-                self.statusItem.button?.title = "🕐 CT"
+    private func startUpdateTimer() {
+        updateTimer?.invalidate()
+        
+        updateTimer = Timer.scheduledTimer(withTimeInterval: Constants.cityRotationInterval, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateStatusItemTitle()
             }
+        }
+        
+        updateTimer?.tolerance = Constants.timerTolerance
+        
+        if let timer = updateTimer {
+            RunLoop.current.add(timer, forMode: .common)
+        }
+    }
+    
+    @MainActor
+    private func updateStatusItemTitle() {
+        if let currentCity = appState.currentDisplayCity {
+            let timeString = appState.getTimeString(for: currentCity, useSliderTime: true, shortFormat: true)
+            statusItem.button?.title = "\(currentCity.emoji) \(currentCity.code) \(timeString)"
+        } else {
+            statusItem.button?.title = Constants.defaultMenuBarTitle
         }
     }
     
@@ -107,14 +129,13 @@ class StatusBarController {
         settingsWindow?.close()
         
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 600),
+            contentRect: NSRect(x: 0, y: 0, width: Constants.settingsWindowWidth, height: Constants.settingsWindowHeight),
             styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
             defer: false
         )
         window.title = "City Selection"
-        window.minSize = NSSize(width: 500, height: 600)
-        window.setContentSize(NSSize(width: 500, height: 600))
+        window.minSize = NSSize(width: Constants.settingsWindowWidth, height: Constants.settingsWindowHeight)
         
         // Create a custom delegate to prevent app termination
         let delegate = SettingsWindowDelegate(statusBarController: self)
@@ -136,7 +157,7 @@ class StatusBarController {
     }
 }
 
-class SettingsWindowDelegate: NSObject, NSWindowDelegate {
+final class SettingsWindowDelegate: NSObject, NSWindowDelegate {
     weak var statusBarController: StatusBarController?
     
     init(statusBarController: StatusBarController? = nil) {
@@ -145,11 +166,10 @@ class SettingsWindowDelegate: NSObject, NSWindowDelegate {
     }
     
     func windowShouldClose(_ sender: NSWindow) -> Bool {
-        return true // Allow window to close
+        return true
     }
     
     func windowWillClose(_ notification: Notification) {
-        // Clear the reference when window closes
         statusBarController?.settingsWindow = nil
     }
 }
@@ -157,6 +177,12 @@ class SettingsWindowDelegate: NSObject, NSWindowDelegate {
 struct PopoverView: View {
     @ObservedObject var appState: AppState
     weak var statusBarController: StatusBarController?
+    private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = Constants.longTimeFormat
+        formatter.locale = Locale(identifier: Constants.defaultLocaleIdentifier)
+        return formatter
+    }()
     
     var body: some View {
         VStack(spacing: 12) {
@@ -191,7 +217,7 @@ struct PopoverView: View {
             }
             
             if appState.timeSliderOffset != 0 {
-                Text("Time offset: \(Int(appState.timeSliderOffset / 3600))h")
+                Text("Time offset: \(Int(appState.timeSliderOffset / Constants.secondsPerHour))h")
                     .font(.caption)
                     .foregroundColor(.blue)
             }
@@ -214,7 +240,7 @@ struct PopoverView: View {
             .buttonStyle(.bordered)
             .controlSize(.small)
         }
-        .padding(16)
+        .padding(Constants.defaultPadding)
         .frame(width: 300)
     }
 }
