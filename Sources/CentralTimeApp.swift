@@ -47,8 +47,8 @@ final class StatusBarController {
     }
     
     func setup() {
-        Task { @MainActor in
-            updateStatusItemTitle()
+        Task { @MainActor [weak self] in
+            self?.updateStatusItemTitle()
         }
         startUpdateTimer()
     }
@@ -68,8 +68,8 @@ final class StatusBarController {
     private func setupStatusItem() {
         statusItem.button?.action = #selector(togglePopover(_:))
         statusItem.button?.target = self
-        Task { @MainActor in
-            updateStatusItemTitle()
+        Task { @MainActor [weak self] in
+            self?.updateStatusItemTitle()
         }
     }
     
@@ -77,7 +77,8 @@ final class StatusBarController {
         updateTimer?.invalidate()
         
         updateTimer = Timer.scheduledTimer(withTimeInterval: Constants.cityRotationInterval, repeats: true) { [weak self] _ in
-            Task { @MainActor in
+            guard let self = self else { return }
+            Task { @MainActor [weak self] in
                 self?.updateStatusItemTitle()
             }
         }
