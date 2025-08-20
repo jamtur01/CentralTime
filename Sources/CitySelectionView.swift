@@ -177,11 +177,7 @@ struct CitySelectionRow: View {
     }
     
     private func getCurrentTimeString() -> String {
-        let formatter = DateFormatterManager.shortFormatter
-        if formatter.timeZone != city.timeZone {
-            formatter.timeZone = city.timeZone
-        }
-        return formatter.string(from: Date())
+        return DateFormatterManager.formatShortTime(for: city)
     }
 }
 

@@ -21,4 +21,22 @@ final class DateFormatterManager {
     }()
     
     private init() {} // Prevent instantiation
+    
+    /// Helper method to safely set timezone on formatter and get formatted string
+    static func formatTime(for city: City, using formatter: DateFormatter, date: Date = Date()) -> String {
+        if formatter.timeZone != city.timeZone {
+            formatter.timeZone = city.timeZone
+        }
+        return formatter.string(from: date)
+    }
+    
+    /// Convenience method for short time format
+    static func formatShortTime(for city: City, date: Date = Date()) -> String {
+        return formatTime(for: city, using: shortFormatter, date: date)
+    }
+    
+    /// Convenience method for long time format
+    static func formatLongTime(for city: City, date: Date = Date()) -> String {
+        return formatTime(for: city, using: longFormatter, date: date)
+    }
 }

@@ -22,7 +22,8 @@
       "Bash(xattr:*)",
       "Bash(find:*)",
       "Bash(./build-dev.sh:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

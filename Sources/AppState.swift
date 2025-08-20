@@ -7,7 +7,7 @@ final class AppState: ObservableObject {
     @Published var timeSliderOffset: TimeInterval = 0
     @Published var isSettingsWindowOpen = false
     
-    private var timer: Timer?
+    private let timer = TimerManager()
     
     let allAvailableTimezones = TimeZoneManager.getAllAvailableCities()
     
@@ -21,20 +21,15 @@ final class AppState: ObservableObject {
     }
     
     deinit {
-        timer?.invalidate()
+        timer.stop()
     }
     
     private func startTimer() {
-        timer?.invalidate()
-        
-        timer = Timer.scheduledTimer(withTimeInterval: Constants.cityRotationInterval, repeats: true) { [weak self] _ in
+        timer.start(
+            interval: Constants.cityRotationInterval,
+            tolerance: Constants.timerTolerance
+        ) { [weak self] in
             self?.rotateToNextCity()
-        }
-        
-        timer?.tolerance = Constants.timerTolerance
-        
-        if let timer = timer {
-            RunLoop.current.add(timer, forMode: .common)
         }
     }
     
@@ -46,13 +41,9 @@ final class AppState: ObservableObject {
     @MainActor
     func getTimeString(for city: City, useSliderTime: Bool = false, shortFormat: Bool = false) -> String {
         let baseDate = useSliderTime ? Date().addingTimeInterval(timeSliderOffset) : Date()
-        let formatter = shortFormat ? DateFormatterManager.shortFormatter : DateFormatterManager.longFormatter
-        
-        if formatter.timeZone != city.timeZone {
-            formatter.timeZone = city.timeZone
-        }
-        
-        return formatter.string(from: baseDate)
+        return shortFormat 
+            ? DateFormatterManager.formatShortTime(for: city, date: baseDate)
+            : DateFormatterManager.formatLongTime(for: city, date: baseDate)
     }
     
     

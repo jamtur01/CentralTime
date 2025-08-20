@@ -6,13 +6,10 @@ struct City: Equatable, Hashable {
     let displayName: String
     let emoji: String
     
-    private var _timeZone: TimeZone?
+    private let _timeZone: TimeZone
     
     var timeZone: TimeZone {
-        if let cached = _timeZone {
-            return cached
-        }
-        return TimeZone(identifier: timeZoneIdentifier) ?? TimeZone.current
+        return _timeZone
     }
     
     init(code: String, timeZoneIdentifier: String, displayName: String? = nil, emoji: String? = nil) {
@@ -20,7 +17,7 @@ struct City: Equatable, Hashable {
         self.timeZoneIdentifier = timeZoneIdentifier
         self.displayName = displayName ?? code
         self.emoji = emoji ?? "🌍"
-        self._timeZone = TimeZone(identifier: timeZoneIdentifier)
+        self._timeZone = TimeZone(identifier: timeZoneIdentifier) ?? TimeZone.current
     }
     
     func hash(into hasher: inout Hasher) {

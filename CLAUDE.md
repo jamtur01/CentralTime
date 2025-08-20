@@ -13,9 +13,9 @@ CentralTime uses a hybrid SwiftUI + AppKit architecture for optimal menu bar int
 ### Core Architecture Components
 
 **Application Entry & Lifecycle**
-- `Sources/CentralTimeApp.swift` - SwiftUI App with @main attribute using NSApplicationDelegateAdaptor pattern
-- `AppDelegate` class handles NSApplication lifecycle and menu bar setup
-- `StatusBarController` manages NSStatusItem, NSPopover, and timer coordination
+- `Sources/CentralTimeApp.swift` - Main SwiftUI App with @main attribute using NSApplicationDelegateAdaptor pattern
+- `Sources/AppDelegate.swift` - Handles NSApplication lifecycle and menu bar setup
+- `Sources/StatusBarController.swift` - Manages NSStatusItem, NSPopover, and timer coordination
 - Uses `.accessory` activation policy to hide from dock
 
 **State Management & Data Flow**
@@ -25,26 +25,28 @@ CentralTime uses a hybrid SwiftUI + AppKit architecture for optimal menu bar int
 - Automatic timezone-offset sorting for consistent display order
 
 **UI Architecture (SwiftUI + AppKit Hybrid)**
-- `StatusBarController` - Pure AppKit for menu bar button and NSPopover management
-- `PopoverView` - SwiftUI view embedded in NSHostingController within NSPopover
-- `CitySelectionView` - Full SwiftUI settings window with search, selection, and keyboard shortcuts
-- `CentralTimeMenuView` - Alternative SwiftUI menu implementation (appears unused in current version)
+- `Sources/StatusBarController.swift` - Pure AppKit for menu bar button and NSPopover management
+- `Sources/PopoverView.swift` - SwiftUI view embedded in NSHostingController within NSPopover
+- `Sources/CitySelectionView.swift` - Full SwiftUI settings window with search, selection, and keyboard shortcuts
+- `Sources/SettingsWindowDelegate.swift` - Custom NSWindowDelegate for settings window lifecycle
 
 **Data Layer**
-- `Sources/City.swift` - Core data model with timezone integration and optional display customization
-- `Sources/TimeZoneManager.swift` - Smart timezone management with 50+ curated major cities
+- `Sources/City.swift` - Core data model with timezone integration and efficient caching
+- `Sources/TimeZoneManager.swift` - Smart timezone management with unified sorting logic
 - `Sources/TimeZoneData.swift` - Comprehensive database of 150+ global cities with emojis and airport codes
-- Dual data sources: curated major cities vs. comprehensive global database
+- `Sources/DateFormatterManager.swift` - Centralized date formatting with timezone-aware helpers
+- `Sources/TimerManager.swift` - Unified timer management for coordinated updates
 
 **Window & Settings Management**
-- `SettingsWindowDelegate` - Custom NSWindowDelegate preventing app termination on window close
+- `Sources/SettingsWindowDelegate.swift` - Custom NSWindowDelegate preventing app termination on window close
 - Dynamic window creation with proper sizing (500x600) and centering
 - Modal-like behavior with single instance enforcement and proper cleanup
 
 ### Key Architectural Patterns
 
 **Timer Management**
-- Dual timer system: StatusBarController (menu bar updates) + AppState (city rotation)
+- Unified timer system using `TimerManager` class for coordinated updates
+- Both StatusBarController and AppState use same TimerManager implementation
 - RunLoop.common integration ensures updates during menu interactions
 - 3-second interval with tolerance for power efficiency
 
@@ -53,10 +55,10 @@ CentralTime uses a hybrid SwiftUI + AppKit architecture for optimal menu bar int
 - @EnvironmentObject injection for deep view hierarchies
 - Manual timer-based updates for menu bar text (AppKit limitation)
 
-**Legacy vs Current Implementation**
-- Legacy code in `CentralTime/` directory: Simple NSApplication with hardcoded 5 cities
-- Current implementation in `Sources/`: Full SwiftUI hybrid with 150+ cities, search, time controls
-- Both implementations coexist (legacy appears unused but kept for reference)
+**File Organization**
+- All current implementation files in `Sources/` directory
+- No legacy code directory - documentation has been updated to match actual structure
+- Clean separation of concerns with dedicated files for each major component
 
 ### Time Management Features
 - **Time Slider**: Navigate forward/backward in time with hourly increments
@@ -67,15 +69,16 @@ CentralTime uses a hybrid SwiftUI + AppKit architecture for optimal menu bar int
 ### Development Architecture Notes
 
 **File Organization**
-- `Sources/` contains the active v2.0 SwiftUI implementation
-- `CentralTime/` contains legacy v1.0 code (NSApplication-only, appears unused)
-- Both use Swift Package Manager but only `Sources/` is referenced in `Package.swift`
+- `Sources/` contains the complete v2.0 SwiftUI implementation
+- Files are organized by responsibility: UI components, data management, utilities
+- Clean architecture with proper separation of concerns
 
 **Data Management Strategy**
-- `TimeZoneManager.majorCities`: Curated list of ~50 major world cities with proper airport codes and emojis
-- `TimeZoneData.allTimezones`: Comprehensive database of 150+ cities for user selection
+- `TimeZoneData.allTimezones`: Comprehensive embedded database of 150+ cities for user selection
+- `TimeZoneManager`: Unified timezone operations with shared sorting logic and caching
 - Default cities: NYC, London, Melbourne, Los Angeles, Chicago (timezone-sorted)
 - City selection persistence through AppState with automatic sorting
+- Timezone caching in City struct for performance optimization
 
 **SwiftUI Integration Patterns**
 - Menu bar button: Pure AppKit (NSStatusItem) due to SwiftUI MenuBarExtra limitations
@@ -84,10 +87,11 @@ CentralTime uses a hybrid SwiftUI + AppKit architecture for optimal menu bar int
 - State flow: AppKit → SwiftUI via @ObservedObject, SwiftUI → AppKit via closures/delegates
 
 **Timer Architecture**
-- AppState timer: Handles city rotation and time updates for UI state
-- StatusBarController timer: Updates menu bar button text (required due to AppKit/SwiftUI boundary)
+- Unified `TimerManager` class providing consistent timer behavior
+- AppState uses TimerManager for city rotation and time updates
+- StatusBarController uses TimerManager for menu bar button text updates
 - Both use 3-second intervals with RunLoop.common for uninterrupted operation
-- Proper cleanup in deinit/applicationWillTerminate
+- Proper cleanup in deinit with centralized timer management
 
 ## Build Commands
 

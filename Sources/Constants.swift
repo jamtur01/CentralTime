@@ -17,15 +17,10 @@ enum Constants {
     
     // UI layout
     static let defaultPadding: CGFloat = 16
-    static let itemSpacing: CGFloat = 12
-    static let compactSpacing: CGFloat = 6
     
     // Default values
     static let defaultCityCodes = ["NYC", "LHR", "MEL", "LAX", "CHI"]
     static let defaultMenuBarTitle = "🕐 CT"
-    
-    // Animation
-    static let animationDuration: TimeInterval = 0.2
     
     // Performance
     static let maxCitiesToDisplay = 50
