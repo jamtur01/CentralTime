@@ -8,8 +8,6 @@ final class AppState: ObservableObject {
     @Published var isSettingsWindowOpen = false
     
     private var timer: Timer?
-    private let dateFormatter = DateFormatter()
-    private let shortDateFormatter = DateFormatter()
     
     let allAvailableTimezones = TimeZoneManager.getAllAvailableCities()
     
@@ -19,16 +17,7 @@ final class AppState: ObservableObject {
     }
     
     init() {
-        configureDateFormatters()
         startTimer()
-    }
-    
-    private func configureDateFormatters() {
-        dateFormatter.locale = Locale(identifier: Constants.defaultLocaleIdentifier)
-        dateFormatter.dateFormat = Constants.longTimeFormat
-        
-        shortDateFormatter.locale = Locale(identifier: Constants.defaultLocaleIdentifier)
-        shortDateFormatter.dateFormat = Constants.shortTimeFormat
     }
     
     deinit {
@@ -57,7 +46,7 @@ final class AppState: ObservableObject {
     @MainActor
     func getTimeString(for city: City, useSliderTime: Bool = false, shortFormat: Bool = false) -> String {
         let baseDate = useSliderTime ? Date().addingTimeInterval(timeSliderOffset) : Date()
-        let formatter = shortFormat ? shortDateFormatter : dateFormatter
+        let formatter = shortFormat ? DateFormatterManager.shortFormatter : DateFormatterManager.longFormatter
         
         if formatter.timeZone != city.timeZone {
             formatter.timeZone = city.timeZone

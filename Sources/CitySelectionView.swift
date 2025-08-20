@@ -4,7 +4,6 @@ struct CitySelectionView: View {
     @EnvironmentObject var appState: AppState
     @State private var searchText = ""
     @State private var selectedCityCodes: Set<String> = []
-    @State private var cachedDateFormatter: DateFormatter?
     let onClose: () -> Void
     
     init(onClose: @escaping () -> Void = {}) {
@@ -63,8 +62,7 @@ struct CitySelectionView: View {
                     ForEach(Array(filteredCities.prefix(Constants.maxCitiesToDisplay)), id: \.timeZoneIdentifier) { city in
                         CitySelectionRow(
                             city: city,
-                            isSelected: selectedCityCodes.contains(city.code),
-                            dateFormatter: getDateFormatter()
+                            isSelected: selectedCityCodes.contains(city.code)
                         ) { isSelected in
                             if isSelected {
                                 selectedCityCodes.insert(city.code)
@@ -86,7 +84,7 @@ struct CitySelectionView: View {
             
             // Action buttons
             HStack {
-                Button("Cancel") {
+                Button(Constants.cancelButtonLabel) {
                     onClose()
                 }
                 .keyboardShortcut(.escape, modifiers: [])
@@ -106,7 +104,7 @@ struct CitySelectionView: View {
                 
                 Spacer()
                 
-                Button("Save") {
+                Button(Constants.saveButtonLabel) {
                     let selectedCities = appState.allAvailableTimezones.filter { 
                         selectedCityCodes.contains($0.code) 
                     }
@@ -124,23 +122,12 @@ struct CitySelectionView: View {
         }
     }
     
-    private func getDateFormatter() -> DateFormatter {
-        if let formatter = cachedDateFormatter {
-            return formatter
-        }
-        let formatter = DateFormatter()
-        formatter.dateFormat = Constants.shortTimeFormat
-        formatter.locale = Locale(identifier: Constants.defaultLocaleIdentifier)
-        cachedDateFormatter = formatter
-        return formatter
-    }
     
 }
 
 struct CitySelectionRow: View {
     let city: City
     let isSelected: Bool
-    let dateFormatter: DateFormatter
     let onToggle: (Bool) -> Void
     
     var body: some View {
@@ -190,10 +177,11 @@ struct CitySelectionRow: View {
     }
     
     private func getCurrentTimeString() -> String {
-        if dateFormatter.timeZone != city.timeZone {
-            dateFormatter.timeZone = city.timeZone
+        let formatter = DateFormatterManager.shortFormatter
+        if formatter.timeZone != city.timeZone {
+            formatter.timeZone = city.timeZone
         }
-        return dateFormatter.string(from: Date())
+        return formatter.string(from: Date())
     }
 }
 

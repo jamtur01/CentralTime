@@ -58,6 +58,12 @@ final class StatusBarController {
         cancellables.removeAll()
     }
     
+    func cleanup() {
+        updateTimer?.invalidate()
+        updateTimer = nil
+        cancellables.removeAll()
+    }
+    
     private func setupPopover() {
         popover.contentSize = NSSize(width: Constants.popoverWidth, height: Constants.popoverHeight)
         popover.behavior = .applicationDefined
@@ -135,7 +141,7 @@ final class StatusBarController {
             backing: .buffered,
             defer: false
         )
-        window.title = "City Selection"
+        window.title = Constants.citySelectionWindowTitle
         window.minSize = NSSize(width: Constants.settingsWindowWidth, height: Constants.settingsWindowHeight)
         
         // Create a custom delegate to prevent app termination
@@ -178,21 +184,15 @@ final class SettingsWindowDelegate: NSObject, NSWindowDelegate {
 struct PopoverView: View {
     @ObservedObject var appState: AppState
     weak var statusBarController: StatusBarController?
-    private let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = Constants.longTimeFormat
-        formatter.locale = Locale(identifier: Constants.defaultLocaleIdentifier)
-        return formatter
-    }()
     
     var body: some View {
         VStack(spacing: 12) {
             // Header
             HStack {
-                Text("🌍 World Clock")
+                Text(Constants.worldClockTitle)
                     .font(.headline)
                 Spacer()
-                Button("Quit") {
+                Button(Constants.quitButtonLabel) {
                     NSApplication.shared.terminate(nil)
                 }
                 .buttonStyle(.bordered)
@@ -228,14 +228,14 @@ struct PopoverView: View {
             // Time Controls
             HStack {
                 Button("← Hour") { appState.previousHour() }
-                Button("Reset") { appState.resetTime() }
+                Button(Constants.resetButtonLabel) { appState.resetTime() }
                 Button("Hour →") { appState.nextHour() }
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
             
             // Settings
-            Button("⚙️ Settings") {
+            Button(Constants.settingsButtonLabel) {
                 statusBarController?.openSettingsWindow()
             }
             .buttonStyle(.bordered)

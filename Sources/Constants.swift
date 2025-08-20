@@ -34,4 +34,15 @@ enum Constants {
     static let shortTimeFormat = "h:mm a"
     static let longTimeFormat = "EEE h:mm a"
     static let defaultLocaleIdentifier = "en_US"
+    
+    // Window titles
+    static let citySelectionWindowTitle = "City Selection"
+    static let worldClockTitle = "🌍 World Clock"
+    
+    // Button labels
+    static let quitButtonLabel = "Quit"
+    static let settingsButtonLabel = "⚙️ Settings"
+    static let cancelButtonLabel = "Cancel"
+    static let saveButtonLabel = "Save"
+    static let resetButtonLabel = "Reset"
 }
