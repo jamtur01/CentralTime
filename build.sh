@@ -89,8 +89,8 @@ if [[ ! "$BUILD_TYPE" =~ ^(development|release|ci)$ ]]; then
 fi
 
 # Extract version information
-VERSION=$(grep -m 1 "public static let version = " Sources/Version.swift | cut -d '"' -f 2)
-BUILD=$(grep -m 1 "public static let build = " Sources/Version.swift | cut -d '"' -f 2)
+VERSION=$(cat VERSION | tr -d '\n')
+BUILD="1"
 
 echo -e "${GREEN}Building CentralTime version $VERSION (build $BUILD)${NC}"
 echo "Build type: $BUILD_TYPE"

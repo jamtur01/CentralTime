@@ -158,9 +158,8 @@ swift test -v
 
 ### Creating a New Release
 
-1. **Update version information in multiple places:**
-   - `VERSION` file (root level)
-   - `Sources/Version.swift` (version and build constants)
+1. **Update version information:**
+   - `VERSION` file (root level) - Used by build scripts and GitHub Actions
    - Optionally update `CHANGELOG.md`
 
 2. **Create and push version tag:**
@@ -198,7 +197,7 @@ swift test -v
 - Code signing with Developer ID or ad-hoc signing
 - Notarization support for distribution
 - Automatic quarantine attribute removal for development builds
-- Version extraction from `Sources/Version.swift`
+- Version extraction from `VERSION` file
 - ZIP archive creation for releases
 
 ## Key Files
